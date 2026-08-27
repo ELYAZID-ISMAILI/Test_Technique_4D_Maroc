@@ -120,59 +120,48 @@ bool JsonValidate::checkBracketsValidaty() const
     return (compt == 0);
 }
 
-// #include <iostream>
-// #include <vector>
-// #include <queue>
-// using namespace std;
+bool isValid() const
+{
+    // Decomposation de json 
+    decomposeJson();
 
-// // BFS for single connected component
-// vector<int> bfs(vector<vector<int>>& adj) {
-//     int V = adj.size();
-//     vector<bool> visited(V, false);
-//     vector<int> res;
-    
-//     queue<int> q;
-    
-//     int src = 0;
-//     visited[src] = true;
-//     q.push(src);
+    if(keyValues_.empty())
+        return true;
 
-//     while (!q.empty()) {
-//         int curr = q.front();
-//         q.pop();
-//         res.push_back(curr);
+    // Verification d'accolade
+    if(!checkAccoladeValidaty())
+        return false;
 
-//         // visit all the unvisited
-//         // neighbours of current node
-//         for (int x : adj[curr]) {
-//             if (!visited[x]) {
-//                 visited[x] = true;
-//                 q.push(x);
-//             }
-//         }
-//     }
-    
-//     return res;
-// }
+    // Verification des virgules
+    if(!checkCommaValidity())
+        return false;
 
-// void addEdge(vector<vector<int>>& adj, int u, int v) {
-//     adj[u].push_back(v);
-//     adj[v].push_back(u);
-// }
+    if(!checkBracketsValidaty())
+        return false;
 
-// int main() {
-//     int V = 5;
-//     vector<vector<int>> adj(V);
-    
-//     // creating adjacency list
-//     addEdge(adj, 1, 2);
-//     addEdge(adj, 1, 0);
-//     addEdge(adj, 2, 0);
-//     addEdge(adj, 2, 3);
-//     addEdge(adj, 2, 4);
+    std::queue<std::string> q;
+    // Iteration sur les key value
+    for(auto keyVal : keyValues_)
+    {
+        // Ici on itere sur les key value
+        // Le json est une structure iterative
+        // Pour chaque key, si sa valeur est simple c'est ok
+        // Si c'est complexe cad c'est un json on le repasse pour iterer
+        // sur lui dans la queue jusqu'a trouver un element simple
 
-//     vector<int> res = bfs(adj);
+        q.push(keyVal.second);
+        while (!q.empty())                  // tant qu'il reste des nœuds à traiter
+        {
+            std::string json = q.front();     // le nœud de devant
+            q.pop();                        // on le retire de la file
 
-//     for (int i : res)
-//         cout << i << " ";
-// }
+            // Si c'est simple comme double ou string ou array c'est ok on fait rien
+            // Si commence par { et fini } c'est un json et on le met dans keyValues_
+            // Si aucun de ces cas, on sort avec false
+        }
+
+    }
+
+    return true;
+
+}

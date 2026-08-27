@@ -12,6 +12,12 @@ class JsonValidate
         // Constructeur de Copie
         JsonValidate(const std::string& pathToJson);
 
+        // Destruteur 
+        ~JsonValidate()
+        {
+            jsonFile_.close();
+        }
+
         // Fonction qui retourne l'etat de validité du json
         bool isValid() const; 
 
