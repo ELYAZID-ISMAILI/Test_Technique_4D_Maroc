@@ -29,7 +29,7 @@ find_package(Threads REQUIRED)
 # Point d'entrée de démonstration
 # =====================================================================
 set(SOURCES_MAIN_HELLO
-    ${CMAKE_CURRENT_SOURCE_DIR}/apps/main_hello.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/main.cpp
     # ${CMAKE_CURRENT_SOURCE_DIR}/src/foo.cpp
     # ${CMAKE_CURRENT_SOURCE_DIR}/src/bar.cpp
 )
@@ -37,18 +37,4 @@ set(SOURCES_MAIN_HELLO
 add_executable(main_hello ${SOURCES_MAIN_HELLO})
 target_include_directories(main_hello PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(main_hello PUBLIC Threads::Threads)
-# target_link_libraries(main_hello PUBLIC fmt::fmt)
 
-# =====================================================================
-# Exécutable 2 : main_graph  (exemple à décommenter le jour venu)
-# Description : ...
-# =====================================================================
-# set(SOURCES_MAIN_GRAPH
-#     ${CMAKE_CURRENT_SOURCE_DIR}/apps/main_graph.cpp
-#     ${CMAKE_CURRENT_SOURCE_DIR}/src/graph/bfs.cpp
-#     ${CMAKE_CURRENT_SOURCE_DIR}/src/graph/dfs.cpp
-# )
-#
-# add_executable(main_graph ${SOURCES_MAIN_GRAPH})
-# target_include_directories(main_graph PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-# target_link_libraries(main_graph PUBLIC Threads::Threads)
