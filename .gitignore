@@ -1,0 +1,9 @@
+build/
+out/
+*.o
+*.obj
+.vscode/settings.json
+.idea/
+*.swp
+.DS_Store
+CMakeUserPresets.json
