@@ -63,19 +63,6 @@ void JsonValidate::decomposeJson()
     }
 }
 
-// Fonction qui retourne l'etat de validité des virgules
-bool JsonValidate::checkCommaValidity() const
-{
-    for(const auto& word : wordsSplited_)
-    {
-        if(word == "")
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 // Fonction qui retourne l'etat de validité des accolades
 bool JsonValidate::checkAccoladeValidaty() const 
 {
@@ -120,48 +107,95 @@ bool JsonValidate::checkBracketsValidaty() const
     return (compt == 0);
 }
 
-bool JsonValidate::isValid()
+bool JsonValidate::isValidValue(const std::string& value)
 {
-    // Decomposation de json 
-    decomposeJson();
+    if (value.empty())
+        return false;
 
-    if(keyValues_.empty())
+    char first = value.front();
+    char last  = value.back();
+
+    // String
+    if (first == '"' && last == '"')
         return true;
 
-    // Verification d'accolade
-    if(!checkAccoladeValidaty())
-        return false;
-
-    // Verification des virgules
-    if(!checkCommaValidity())
-        return false;
-
-    if(!checkBracketsValidaty())
-        return false;
-
-    std::queue<std::string> q;
-    // Iteration sur les key value
-    for(auto keyVal : keyValues_)
+    // Nombre
+    if (isdigit(first))
     {
-        // Ici on itere sur les key value
-        // Le json est une structure iterative
-        // Pour chaque key, si sa valeur est simple c'est ok
-        // Si c'est complexe cad c'est un json on le repasse pour iterer
-        // sur lui dans la queue jusqu'a trouver un element simple
-
-        q.push(keyVal.second);
-        while (!q.empty())                  // tant qu'il reste des nœuds à traiter
-        {
-            std::string json = q.front();     // le nœud de devant
-            q.pop();                        // on le retire de la file
-
-            // Si c'est simple comme double ou string ou array c'est ok on fait rien
-            // Si commence par { et fini } c'est un json et on le met dans keyValues_
-            // Si aucun de ces cas, on sort avec false
-        }
-
+        for (char c : value)
+            if (!isdigit(c)) return false;
+        return true;
     }
 
-    return true;
+    // true ou false ou null
+    if (value == "true" || value == "false" || value == "null")
+        return true;
 
+    // un json
+    if (first == '{' && last == '}')
+    {
+        std::string inner = value.substr(1, value.size() - 2);
+        if (inner.empty()) return true;
+
+        auto pairs = split(inner, ',');
+        for (const auto& pair : pairs)
+        {
+            size_t colon = pair.find(':');
+            if (colon == std::string::npos)
+                return false;
+
+            std::string key = pair.substr(0, colon);
+            std::string val = pair.substr(colon + 1);
+
+            if (key.front() != '"' || key.back() != '"')
+                return false;
+
+            if (!isValidValue(val))
+                return false;
+        }
+        return true;
+    }
+
+    // Cas de tableau
+    if (first == '[' && last == ']')
+    {
+        std::string inner = value.substr(1, value.size() - 2);
+        if (inner.empty()) return true;
+
+        auto elements = split(inner, ',');
+        for (const auto& elem : elements)
+        {
+            if (!isValidValue(elem))
+                return false;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+bool JsonValidate::isValid()
+{
+    // Supprimer les espaces hors strings
+    std::string cleaned;
+    bool inString = false;
+    for (size_t i = 0; i < allText_.size(); i++)
+    {
+        char c = allText_[i];
+        if (c == '"' && (i == 0 || allText_[i-1] != '\\'))
+            inString = !inString;
+        if (inString || (c != ' ' && c != '\n' && c != '\t' && c != '\r'))
+            cleaned += c;
+    }
+    allText_ = cleaned;
+
+    // Vérifications rapides avant la récursion
+    if (!checkAccoladeValidaty())
+        return false;
+
+    if (!checkBracketsValidaty())
+        return false;
+
+    // Validation complète par récursion
+    return isValidValue(allText_);
 }

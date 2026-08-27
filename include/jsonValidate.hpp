@@ -18,11 +18,11 @@ class JsonValidate
             jsonFile_.close();
         }
 
+        // Fonction pour valider un seul champs
+        bool isValidValue(const std::string& value);
+
         // Fonction qui retourne l'etat de validité du json
         bool isValid(); 
-
-        // Fonction qui retourne l'etat de validité des virgules
-        bool checkCommaValidity() const;
 
         // Fonction qui retourne l'etat de validité des accolades
         bool checkAccoladeValidaty()const;
