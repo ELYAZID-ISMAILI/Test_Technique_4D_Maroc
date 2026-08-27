@@ -16,7 +16,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # --- Warnings globaux ------------------------------------------------------
-add_compile_options(-Wall -Wextra -Wpedantic -Wshadow)
+add_compile_options(-Wall -Wextra -Wpedantic -Wshadow -Wfatal-errors)
 
 # --- Threading (portable) --------------------------------------------------
 find_package(Threads REQUIRED)
@@ -30,8 +30,7 @@ find_package(Threads REQUIRED)
 # =====================================================================
 set(SOURCES_MAIN_HELLO
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/main.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/src/foo.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/src/bar.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/jsonValidate.cpp
 )
 
 add_executable(main_hello ${SOURCES_MAIN_HELLO})

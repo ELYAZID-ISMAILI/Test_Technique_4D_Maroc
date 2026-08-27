@@ -2,12 +2,26 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
-#include <string.h>
+#include <algorithm>
+#include <bits/stdc++.h>
+#include <sstream>    
 
 using namespace std;
 
+
+static vector<string> split(string str, char delimiter)
+{
+  // Using str in a string stream
+    stringstream ss(str);
+    vector<string> res;
+    string token;
+    while (getline(ss, token, delimiter)) {
+        res.push_back(token);
+    }
+    return res;
+}
+
 std::string readJsonFile(const std::string& pathFile);
-void removeCharsFromString( string &str, char* charsToRemove );
 
 // bool checkValidity(const std::string& text);
 
@@ -24,8 +38,8 @@ int main(int argc, char* argv[])
     std::string allText = readJsonFile(argv[1]);
     int size = allText.size();
 
-    std::cout << "Premier Element : " << allText[0] << std::endl;
-    std::cout << "Dernier Element : " << allText[size - 1] << std::endl;
+    // std::cout << "Premier Element : " << allText[0] << std::endl;
+    // std::cout << "Dernier Element : " << allText[size - 1] << std::endl;
 
     if(allText[0] != allText[size - 1])
     {
@@ -34,12 +48,6 @@ int main(int argc, char* argv[])
     }
 
     return 0;
-}
-
-void removeCharsFromString( string &str, char* charsToRemove ) {
-   for ( unsigned int i = 0; i < strlen(charsToRemove); ++i ) {
-      str.erase( remove(str.begin(), str.end(), charsToRemove[i]), str.end() );
-   }
 }
 
 std::string readJsonFile(const std::string& pathFile)
@@ -59,10 +67,14 @@ std::string readJsonFile(const std::string& pathFile)
 
     // int size = allText.size();
 
-    // Remove all occurrences of 3 from vector v
-    char chars[] = " ";
-    removeCharsFromString( allText, chars);
-    std::cout << allText << std::endl;
+    // Remove all occurrences of ' ' in text
+    allText.erase( remove(allText.begin(), allText.end(), ' '), allText.end() );
+
+    // Split Text by ','
+    std::vector<std::string> textSplited = split(allText, ',');
+    
+    for(auto const& keyValue : textSplited)
+        std::cout << keyValue << std::endl;
 
     // Always close the file when done
     inputFile.close();
