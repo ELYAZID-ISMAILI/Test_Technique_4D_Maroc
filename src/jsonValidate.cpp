@@ -7,7 +7,7 @@
 #include <sstream>    
 #include <bits/stdc++.h>
 
-void readallTextFromJson()
+void JsonValidate::readAllTextFromJson()
 {
     // Variable to store each line from the file
     std::string line;
@@ -36,7 +36,7 @@ static std::vector<std::string> split(std::string str, char delimiter)
 JsonValidate::JsonValidate(const std::string& pathToFile)
 {
     jsonFile_ = std::ifstream(pathToFile.c_str());
-    allText_ = readAllTextFromJson(); // Needs jsonFile_ after
+    readAllTextFromJson(); // Needs jsonFile_ after
 }
 
 void JsonValidate::decomposeJson()
@@ -120,7 +120,7 @@ bool JsonValidate::checkBracketsValidaty() const
     return (compt == 0);
 }
 
-bool isValid() const
+bool JsonValidate::isValid()
 {
     // Decomposation de json 
     decomposeJson();

@@ -19,7 +19,7 @@ class JsonValidate
         }
 
         // Fonction qui retourne l'etat de validité du json
-        bool isValid() const; 
+        bool isValid(); 
 
         // Fonction qui retourne l'etat de validité des virgules
         bool checkCommaValidity() const;
@@ -34,7 +34,7 @@ class JsonValidate
         void decomposeJson();
 
         // Lecture de tous le texte
-        void readallTextFromJson();
+        void readAllTextFromJson();
 
     private : 
         std::unordered_map<std::string, std::string>  keyValues_; // Contient les key Values de tous les mots
