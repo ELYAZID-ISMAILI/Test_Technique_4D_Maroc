@@ -1,11 +1,8 @@
 #include "jsonValidate.hpp"
-
 #include <iostream>
-#include <algorithm>
 #include <sstream>
-#include <iostream>   
-#include <sstream>    
-#include <bits/stdc++.h>
+#include <iostream>
+#include <cctype>
 
 void JsonValidate::readAllTextFromJson()
 {
@@ -76,7 +73,7 @@ void JsonValidate::decomposeJson()
     allText_ = cleaned;
 
     // Stocker les clé:valeur si c'est un object
-    if (allText_.front() == '{' && allText_.back() == '}')
+    if(!allText_.empty() && allText_.front() == '{' && allText_.back() == '}')
     {
         std::string inner = allText_.substr(1, allText_.size() - 2);
         if (inner.empty()) return;
