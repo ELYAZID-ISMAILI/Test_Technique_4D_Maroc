@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cctype>
 
+// Sépare une string par un délimiteur en respectant
+// l'imbrication ({}, []) et les strings ("")
 static std::vector<std::string> split(std::string str, char delimiter)
 {
     std::vector<std::string> res;
