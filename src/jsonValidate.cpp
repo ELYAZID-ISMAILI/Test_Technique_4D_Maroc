@@ -4,19 +4,6 @@
 #include <iostream>
 #include <cctype>
 
-void JsonValidate::readAllTextFromJson()
-{
-    // Variable to store each line from the file
-    std::string line;
-
-    // Read each line from the file and print it
-    while (getline(jsonFile_, line)) 
-    {
-        // Process each line as needed
-        allText_ = allText_.append(line);
-    }
-}
-
 static std::vector<std::string> split(std::string str, char delimiter)
 {
     std::vector<std::string> res;
@@ -50,6 +37,18 @@ static std::vector<std::string> split(std::string str, char delimiter)
     return res;
 }
 
+void JsonValidate::readAllTextFromJson()
+{
+    // Variable to store each line from the file
+    std::string line;
+
+    // Read each line from the file and print it
+    while (getline(jsonFile_, line)) 
+    {
+        // Process each line as needed
+        allText_ = allText_.append(line);
+    }
+}
 
 JsonValidate::JsonValidate(const std::string& pathToFile)
 {
