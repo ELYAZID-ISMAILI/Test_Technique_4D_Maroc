@@ -18,11 +18,8 @@ private:
     // Lit le fichier ligne par ligne dans allText_ en gardant les '\n'
     void readAllTextFromJson(std::ifstream& file);
 
-    // Fonction qui retourne l'etat de validité des accolades
-    bool checkAccoladeValidaty() const;
-
-    // Fonction qui retourne l'etat de validité des brackets
-    bool checkBracketsValidaty() const;
+    // Pré-filtre rapide : vérifie l'équilibrage global des { } et des [ ]
+    bool checkDelimitersValidity() const;
 
     // Valide récursivement une valeur JSON (string, nombre, literal, objet, array)
     // rawValue pointe dans allText_, qui ne doit pas être modifié pendant la validation

@@ -1,146 +1,172 @@
 #include "jsonValidate.hpp"
-#include <iostream>
-#include <sstream>
-#include <iostream>
 #include <cctype>
+#include <string_view>
 
-// Sépare une string par un délimiteur en respectant
-// l'imbrication ({}, []) et les strings ("")
-static std::vector<std::string> split(std::string str, char delimiter)
+// Retire les espaces autour d'un token, jamais ceux à l'intérieur
+static std::string_view trimWhitespace(std::string_view s)
 {
-    std::vector<std::string> res;
-    std::string token;
+    size_t start = 0;
+    size_t end   = s.size();
+
+    while (start < end && std::isspace(static_cast<unsigned char>(s[start])))
+        start++;
+    while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1])))
+        end--;
+
+    return s.substr(start, end - start);
+}
+
+// Sépare une string_view par un délimiteur en respectant
+// l'imbrication ({}, []) et les strings ("")
+static std::vector<std::string_view> split(std::string_view str, const char delimiter)
+{
+    std::vector<std::string_view> res;
+    size_t tokenStart = 0;
     int depth = 0;
     bool inString = false;
+    bool escaped  = false;
 
     for (size_t i = 0; i < str.size(); i++)
     {
         char c = str[i];
-        if (c == '"' && (i == 0 || str[i-1] != '\\'))
-            inString = !inString;
 
-        if (!inString)
+        if (inString)
         {
-            if (c == '{' || c == '[') depth++;
-            else if (c == '}' || c == ']') depth--;
+            if (escaped)        escaped = false;
+            else if (c == '\\') escaped = true;
+            else if (c == '"')  inString = false;
+            continue;
         }
 
-        if (c == delimiter && depth == 0 && !inString)
+        if (c == '"') { inString = true; continue; }
+
+        if (c == '{' || c == '[') depth++;
+        else if (c == '}' || c == ']') depth--;
+
+        if (c == delimiter && depth == 0)
         {
-            res.push_back(token);
-            token.clear();
+            res.push_back(str.substr(tokenStart, i - tokenStart));
+            tokenStart = i + 1;
         }
-        else
-            token += c;
     }
-    if (!token.empty())
-        res.push_back(token);
+    res.push_back(str.substr(tokenStart));
 
     return res;
 }
 
-void JsonValidate::readAllTextFromJson()
+static bool isValidString(std::string_view s)
+{
+    if (s.size() < 2 || s.front() != '"' || s.back() != '"')
+        return false;
+
+    const std::string_view body = s.substr(1, s.size() - 2);
+
+    for (size_t i = 0; i < body.size(); i++)
+    {
+        char c = body[i];
+
+        if (c != '\\')
+            continue;
+
+        i++; // On passe au caractère échappé
+        if (i >= body.size())
+            return false;
+
+        // Les échappements JSON : \" \\ \/ \n \r \t
+        if (std::string_view("\"\\/nrt").find(body[i]) != std::string_view::npos)
+            continue;;
+
+        for (int k = 0; k < 4; k++)
+            if (!std::isxdigit(static_cast<unsigned char>(body[++i])))
+                return false;
+    }
+    return true;
+}
+
+// Simplification autorisée par le sujet : un nombre est une suite de chiffres
+// décimaux, sans signe, sans partie décimale ni exposant
+static bool isValidNumber(std::string_view s)
+{
+    if (s.empty())
+        return false;
+
+    for (char c : s)
+        if (!std::isdigit(static_cast<unsigned char>(c)))
+            return false;
+
+    return true;
+}
+
+void JsonValidate::readAllTextFromJson(std::ifstream& file)
 {
     // Variable to store each line from the file
     std::string line;
 
     // Read each line from the file and print it
-    while (getline(jsonFile_, line)) 
+    while (getline(file, line))
     {
         // Process each line as needed
-        allText_ = allText_.append(line);
+        allText_ = allText_.append(line).append("\n");
     }
 }
 
 JsonValidate::JsonValidate(const std::string& pathToFile)
 {
-    jsonFile_ = std::ifstream(pathToFile.c_str());
-    readAllTextFromJson(); // Needs jsonFile_ after
+    std::ifstream file(pathToFile.c_str());
+    readAllTextFromJson(file);
 }
 
-void JsonValidate::decomposeJson()
+// Pré-filtre rapide : vérifie l'équilibrage global des { } et des [ ]
+// en un seul passage. Ne valide pas la grammaire, sert à rejeter vite
+// un fichier manifestement cassé avant de lancer la récursion.
+bool JsonValidate::checkDelimitersValidity() const
 {
-    // Supprimer les espaces hors strings
-    std::string cleaned;
+    int accolades = 0;
+    int brackets  = 0;
     bool inString = false;
-    for (size_t i = 0; i < allText_.size(); i++)
-    {
-        char c = allText_[i];
-        if (c == '"' && (i == 0 || allText_[i-1] != '\\'))
-            inString = !inString;
-        if (inString || (c != ' ' && c != '\n' && c != '\t' && c != '\r'))
-            cleaned += c;
-    }
-    allText_ = cleaned;
+    bool escaped  = false;
 
-    // Stocker les clé:valeur si c'est un object
-    if(!allText_.empty() && allText_.front() == '{' && allText_.back() == '}')
+    for (auto const& c : allText_)
     {
-        std::string inner = allText_.substr(1, allText_.size() - 2);
-        if (inner.empty()) return;
-
-        wordsSplited_ = split(inner, ',');
-        for (const auto& pair : wordsSplited_)
+        if (inString)
         {
-            size_t colon = pair.find(':');
-            if (colon == std::string::npos)
-                continue;
-
-            std::string key = pair.substr(0, colon);
-            std::string val = pair.substr(colon + 1);
-            keyValues_.insert({key, val});
+            if (escaped)        escaped = false;
+            else if (c == '\\') escaped = true;
+            else if (c == '"')  inString = false;
+            continue;
         }
-    }
-}
 
-// Fonction qui retourne l'etat de validité des accolades
-bool JsonValidate::checkAccoladeValidaty() const 
-{
-    int compt = 0;
+        if (c == '"')
+            inString = true;
 
-    // On incremente avec { et on décrementer avec } sauf si compteur > 0
-    for(auto const& c : allText_)
-    {
-        if(c == '{')
-            compt++;
-        
-        else if(c == '}')
+        else if (c == '{')
+            accolades++;
+
+        else if (c == '}')
         {
-            if(compt <= 0)
+            if (accolades <= 0)
                 return false;
-
-            else
-                compt--;
+            accolades--;
         }
-    }
-    return (compt == 0); // Chaque ouverture de { a sa propre fermeture }.
-}
 
-// Fonction qui retourne l'etat de validité des brackets
-bool JsonValidate::checkBracketsValidaty() const
-{
-    int compt = 0;
+        else if (c == '[')
+            brackets++;
 
-    // On incremente avec [ et on décrementer avec ] sauf si compteur > 0
-    for(auto const& c : allText_)
-    {
-        if(c == '[')
-            compt++;
-        
-        else if(c == ']')
+        else if (c == ']')
         {
-            if(compt <= 0)
+            if (brackets <= 0)
                 return false;
-
-            else
-                compt--;
+            brackets--;
         }
     }
-    return (compt == 0); // Chaque ouverture de [ a sa propre fermeture ].
+    // Chaque ouverture a sa propre fermeture
+    return accolades == 0 && brackets == 0;
 }
 
-bool JsonValidate::isValidValue(const std::string& value)
+bool JsonValidate::isValidValue(std::string_view rawValue)
 {
+    const std::string_view value = trimWhitespace(rawValue);
+
     if (value.empty())
         return false;
 
@@ -148,18 +174,12 @@ bool JsonValidate::isValidValue(const std::string& value)
     char last  = value.back();
 
     // String
-    if (first == '"' && last == '"')
-        return true;
+    if (first == '"')
+        return isValidString(value);
 
     // Nombre
-    if (isdigit(first))
-    {
-        for (char c : value)
-            if (!isdigit(c)) 
-                return false;
-        
-        return true;
-    }
+    if (first == '-' || std::isdigit(static_cast<unsigned char>(first)))
+        return isValidNumber(value);
 
     // Literals
     if (value == "true" || value == "false" || value == "null")
@@ -168,20 +188,20 @@ bool JsonValidate::isValidValue(const std::string& value)
     // Object qui est un json
     if (first == '{' && last == '}')
     {
-        std::string inner = value.substr(1, value.size() - 2);
+        std::string_view inner = trimWhitespace(value.substr(1, value.size() - 2));
         if (inner.empty()) return true;
 
         auto pairs = split(inner, ',');
         for (const auto& pair : pairs)
         {
-            size_t colon = pair.find(':');
-            if (colon == std::string::npos)
+            auto kv = split(pair, ':');
+            if (kv.size() != 2)
                 return false;
 
-            std::string key = pair.substr(0, colon);
-            std::string val = pair.substr(colon + 1);
+            std::string_view key = trimWhitespace(kv[0]);
+            std::string_view val = kv[1];
 
-            if (key.front() != '"' || key.back() != '"')
+            if (!isValidString(key))
                 return false;
 
             if (!isValidValue(val))
@@ -193,7 +213,7 @@ bool JsonValidate::isValidValue(const std::string& value)
     // Array
     if (first == '[' && last == ']')
     {
-        std::string inner = value.substr(1, value.size() - 2);
+        std::string_view inner = trimWhitespace(value.substr(1, value.size() - 2));
         if (inner.empty()) return true;
 
         auto elements = split(inner, ',');
@@ -211,18 +231,16 @@ bool JsonValidate::isValidValue(const std::string& value)
 
 bool JsonValidate::isValid()
 {
-    // Nettoyage du texte et extraction des clé:valeur
-    decomposeJson();
+    const std::string_view root = trimWhitespace(allText_);
 
-    // Vérification rapide : les { } sont-ils équilibrés ?
-    if (!checkAccoladeValidaty())
+    if (root.empty())
         return false;
 
-    // Vérification rapide : les [ ] sont-ils équilibrés ?
-    if (!checkBracketsValidaty())
+    // Pré-filtre rapide : les délimiteurs sont-ils équilibrés ?
+    if (!checkDelimitersValidity())
         return false;
-
+    
     // Validation complète par récursion (DFS)
     // Parcourt chaque valeur en profondeur jusqu'aux types simples
-    return isValidValue(allText_);
+    return isValidValue(root);
 }
