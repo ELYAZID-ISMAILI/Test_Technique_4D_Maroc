@@ -25,15 +25,14 @@ find_package(Threads REQUIRED)
 # find_package(fmt REQUIRED)
 
 # =====================================================================
-# Exécutable 1 : main_hello
+# Exécutable 1 : checkValidaty
 # Point d'entrée de démonstration
 # =====================================================================
-set(SOURCES_MAIN_HELLO
+set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/jsonValidate.cpp
 )
 
-add_executable(main_hello ${SOURCES_MAIN_HELLO})
-target_include_directories(main_hello PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(main_hello PUBLIC Threads::Threads)
-
+add_executable(checkValidaty ${SOURCES})
+target_include_directories(checkValidaty PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(checkValidaty PUBLIC Threads::Threads)
