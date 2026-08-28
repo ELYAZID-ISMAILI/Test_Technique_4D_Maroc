@@ -1,0 +1,35 @@
+{
+    "utilisateur": {
+        "nom": "Ali",
+        "age": 25,
+        "adresse": {
+            "ville": "Paris",
+            "coordonnees": {
+                "lat": 33,
+                "lng": 7
+            },
+        },
+        "langues": [
+            "arabe",
+            "francais",
+        ],
+        "projets": [
+            {
+                "nom": "API",
+        tags: [
+                    "cpp",
+                    "json"
+                ],
+                "config": {
+                    "debug": false,
+                    "modules": [
+                        {
+                            "nom": "parser",
+                            "actif": True
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+}

@@ -1,0 +1,51 @@
+{
+    "utilisateur": {
+        "nom": "Ali",
+        "age": 25,
+        "actif": true,
+        "adresse": {
+            "ville": "Paris",
+            "code": 20000,
+            "coordonnees": {
+                "lat": 33,
+                "lng": 7
+            }
+        },
+        "langues": [
+            "arabe",
+            "francais",
+            "anglais"
+        ],
+        "projets": [
+            {
+                "nom": "API",
+                "tags": [
+                    "cpp",
+                    "json"
+                ],
+                "config": {
+                    "debug": false,
+                    "version": 3,
+                    "modules": [
+                        {
+                            "nom": "parser",
+                            "actif": true
+                        },
+                        {
+                            "nom": "validator",
+                            "actif": false
+                        }
+                    ]
+                }
+            },
+            {
+                "nom": "Web",
+                "tags": [],
+                "config": null
+            }
+        ],
+        "meta": null
+    },
+    "total": 1,
+    "vide": {}
+}
