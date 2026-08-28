@@ -1,7 +1,5 @@
 #include "jsonValidate.hpp"
-
 #include <iostream>
- 
 
 int main(int argc, char* argv[])
 {
@@ -12,8 +10,8 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    JsonValidate jsonVali = JsonValidate(argv[2]);
-    std::cout << jsonVali.isValid() << std::endl;
-
+    JsonValidate jsonVali = JsonValidate(argv[1]);
+    std::cout << (jsonVali.isValid() ? "true" : "false") << std::endl;
+    
     return 0;
 }
