@@ -1,40 +1,33 @@
-#include <fstream>
+#pragma once
+
 #include <string>
-#include <unordered_map>
+#include <string_view>
 #include <vector>
+#include <fstream>
 
 class JsonValidate
 {
-    public :
-        // Construteur par défaut
-        JsonValidate() =  default;
+public:
+    // Ouvre le fichier et charge son contenu dans allText_
+    JsonValidate(const std::string& pathToFile);
 
-        // Constructeur avec chemin vers le fichier json
-        JsonValidate(const std::string& pathToJson);
+    // Point d'entrée : true si le fichier contient un JSON valide
+    bool isValid();
 
-        // Valide récursivement une valeur JSON
-        // Types simples (string, number, bool, null) : validation directe
-        // Types complexes (object, array) : appel récursif sur chaque sous-valeur
-        bool isValidValue(const std::string& value);
+private:
+    // Lit le fichier ligne par ligne dans allText_ en gardant les '\n'
+    void readAllTextFromJson(std::ifstream& file);
 
-        // Fonction qui retourne l'etat de validité du json
-        bool isValid(); 
+    // Fonction qui retourne l'etat de validité des accolades
+    bool checkAccoladeValidaty() const;
 
-        // Fonction qui retourne l'etat de validité des accolades
-        bool checkAccoladeValidaty() const;
+    // Fonction qui retourne l'etat de validité des brackets
+    bool checkBracketsValidaty() const;
 
-        // Fonction qui retourne l'etat de validité des brackets
-        bool checkBracketsValidaty() const;
+    // Valide récursivement une valeur JSON (string, nombre, literal, objet, array)
+    // rawValue pointe dans allText_, qui ne doit pas être modifié pendant la validation
+    bool isValidValue(std::string_view rawValue);
 
-        // Decomposer le json et le remplir dans keyValues_
-        void decomposeJson();
-
-        // Lit le fichier JSON ligne par ligne et concatène dans allText_
-        void readAllTextFromJson();
-
-    private : 
-        std::unordered_map<std::string, std::string>  keyValues_; // Contient les key Values de tous les mots
-        std::vector<std::string> wordsSplited_; // Vector des mots splité
-        std::string allText_; // Contenu brut du fichier JSON
-        std::ifstream jsonFile_; // Reader de Fichier json
+    // Propriétaire du texte, seul état conservé par la classe
+    std::string allText_;
 };
